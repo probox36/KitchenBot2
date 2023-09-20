@@ -1,16 +1,15 @@
 package Runners;
 
 import Bot.HibernateConfigurator;
-import Entities.Database;
-import Entities.DayOff;
-import Entities.Event;
-import Entities.KitchenUser;
+import Bot.ScheduleProvider;
+import Entities.*;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 
 public class Runner2 {
@@ -20,7 +19,7 @@ public class Runner2 {
 
 //        String hql = "from KitchenUser";
 //        Query<KitchenUser> query = session.createQuery(hql, KitchenUser.class);
-////        query2.setParameter("weight", weight);
+//        query2.setParameter("weight", weight);
 //        ArrayList<KitchenUser> users = new ArrayList<>(query.list());
 //        for (KitchenUser user : users) {
 //            System.out.println(user);
@@ -63,17 +62,32 @@ public class Runner2 {
 
 //        transaction.commit();
 
-        Database db = new Database();
-        LinkedList<KitchenUser> queue = db.getQueue();
-        for (KitchenUser user: queue) {
-            System.out.println(user);
-        }
-
-        for (DayOff day: db.getDaysOff()) {
-            System.out.println(day);
-        }
+//        Database db = new Database();
+//        LinkedList<KitchenUser> queue = db.getQueue();
+//        for (KitchenUser user: queue) {
+//            System.out.println(user);
+//        }
+//
+//
+//        for (DayOff day: db.getDaysOff()) {
+//            System.out.println(day);
+//        }
 
         session.close();
 
+        ScheduleProvider provider = ScheduleProvider.getInstance();
+        HashMap<LocalDate, DutyDay> schedule = provider.getSchedule(30);
+        for (LocalDate date: schedule.keySet()) {
+            System.out.println(date + ": " + schedule.get(date));
+        }
+        schedule = provider.getSchedule(25);
+        for (LocalDate date: schedule.keySet()) {
+            System.out.println(date + ": " + schedule.get(date));
+        }
+        provider.setChangesMade(true);
+        schedule = provider.getSchedule(15);
+        for (LocalDate date: schedule.keySet()) {
+            System.out.println(date + ": " + schedule.get(date));
+        }
     }
 }

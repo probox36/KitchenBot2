@@ -7,32 +7,50 @@ import java.util.*;
 
 public class ScheduleProvider {
 
-    private LinkedList<KitchenUser> naturalOrder;
-    private HashMap<LocalDate, Event> events;
-    private ArrayList<SwapTicket> swapList;
+    private static ScheduleProvider instance;
+    private boolean changesMade;
+    private ScheduleIterator iterator;
+    private HashMap<LocalDate, DutyDay> archivedSchedule;
 
-    public ScheduleProvider(LinkedList<KitchenUser> naturalOrder, HashMap<LocalDate, Event> events, ArrayList<SwapTicket> swapList) {
-        this.naturalOrder = naturalOrder;
-        this.events = events;
-        this.swapList = swapList;
+    private ScheduleProvider(ScheduleIterator iterator) {
+        this.iterator = iterator;
     }
 
-    public void setNaturalOrder(LinkedList<KitchenUser> naturalOrder) { this.naturalOrder = naturalOrder; }
-    public void setEvents(HashMap<LocalDate, Event> events) { this.events = events; }
-    public void setSwapList(ArrayList<SwapTicket> swapList) { this.swapList = swapList; }
+    public static ScheduleProvider getInstance() {
+        if (instance == null) {
+            instance = new ScheduleProvider(ScheduleIterator.getInstance());
+            instance.setChangesMade(false);
+        }
+        return instance;
+    }
 
     public HashMap<LocalDate, DutyDay> getSchedule(int days) {
-        ScheduleIterator iterator = new ScheduleIterator(naturalOrder, events, swapList);
-        HashMap<LocalDate, DutyDay> schedule = new HashMap<>();
-        for (int i = 1; i <= days; i++) {
-            DutyDay day = iterator.getNextDay();
-            schedule.put(iterator.getCurrentDate(), day);
+        if (archivedSchedule != null && !wereChangesMade() && days <= archivedSchedule.size()) {
+            HashMap<LocalDate, DutyDay> finalSchedule = new HashMap<>();
+            if (days < archivedSchedule.size()) {
+                ArrayList<LocalDate> dates = new ArrayList<>(archivedSchedule.keySet());
+                Collections.sort(dates);
+                for (int i = 0; i < days; i++) {
+                    LocalDate date = dates.get(i);
+                    finalSchedule.put(date, archivedSchedule.get(date));
+                }
+            } else { finalSchedule = archivedSchedule; }
+            System.out.println("Мы вернули архивированный schedule!");
+            return finalSchedule;
+        } else {
+            HashMap<LocalDate, DutyDay> schedule = new HashMap<>();
+            for (int i = 1; i <= days; i++) {
+                DutyDay day = iterator.getNextDay();
+                schedule.put(iterator.getCurrentDate(), day);
+            }
+            archivedSchedule = schedule;
+            changesMade = false;
+            System.out.println("Мы вернули обычный schedule!");
+            return schedule;
         }
-        return schedule;
     }
 
     public ArrayList<LocalDate> getDutyDates(KitchenUser user, int times) {
-        ScheduleIterator iterator = new ScheduleIterator(naturalOrder, events, swapList);
         ArrayList<LocalDate> dates = new ArrayList<>();
         while (times > 0) {
             DutyDay day = iterator.getNextDay();
@@ -48,4 +66,19 @@ public class ScheduleProvider {
         return dates;
     }
 
+    public boolean wereChangesMade() {
+        return changesMade;
+    }
+
+    public void setChangesMade(boolean changesMade) {
+        this.changesMade = changesMade;
+    }
+
+    public ScheduleIterator getIterator() {
+        return iterator;
+    }
+
+    public void setIterator(ScheduleIterator iterator) {
+        this.iterator = iterator;
+    }
 }

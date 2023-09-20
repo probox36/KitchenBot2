@@ -58,7 +58,8 @@ public class Event implements DutyDay {
 
     public Event() {}
 
-    public Event(String reason) {
+    public Event(LocalDate date, String reason) {
+        this.date = date;
         this.name = reason;
     }
 

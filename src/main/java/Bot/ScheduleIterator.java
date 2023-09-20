@@ -11,22 +11,32 @@ public class ScheduleIterator {
 
     private LinkedList<KitchenUser> naturalOrder;
     private LinkedList<KitchenUser> naturalOrderClone;
-    private HashMap<LocalDate, Event> events;
+    private ArrayList<Event> events;
     private ArrayList<SwapTicket> swapList;
     private LocalDate currentDate;
     private ArrayList<DayOff> daysOff;
 
     public void setNaturalOrder(LinkedList<KitchenUser> naturalOrder) { this.naturalOrder = naturalOrder; }
-    public void setEvents(HashMap<LocalDate, Event> events) { this.events = events; }
+    public void setEvents(ArrayList<Event> events) { this.events = events; }
     public void setSwapList(ArrayList<SwapTicket> swapList) { this.swapList = swapList; }
 
     public LocalDate getCurrentDate() { return currentDate; }
-    public ScheduleIterator(LinkedList<KitchenUser> naturalOrder,
-                            HashMap<LocalDate, Event> events, ArrayList<SwapTicket> swapList) {
+    public ScheduleIterator(LinkedList<KitchenUser> naturalOrder, ArrayList<Event> events,
+                            ArrayList<SwapTicket> swapList, ArrayList<DayOff> daysOff) {
         this.naturalOrder = new LinkedList<>(naturalOrder);
         this.events = events;
         this.swapList = swapList;
+        this.daysOff = daysOff;
         reset();
+    }
+
+    public static ScheduleIterator getInstance() {
+        Database db = new Database();
+        LinkedList<KitchenUser> naturalOrder = db.getQueue();
+        ArrayList<Event> events = db.getEvents();
+        ArrayList<SwapTicket> swapList = db.getSwapList();
+        ArrayList<DayOff> daysOff = db.getDaysOff();
+        return new ScheduleIterator(naturalOrder, events, swapList, daysOff);
     }
 
     public void reset() {
@@ -36,9 +46,35 @@ public class ScheduleIterator {
 
     public DutyDay getNextDay() {
         currentDate = currentDate.plusDays(1);
-        DutyDay dutyDay = events.get(currentDate);
+        DutyDay dutyDay = null;
+
+        // проверяем: сегодня есть событие?
+        for (Event event: events) {
+            if (event.getDate().equals(currentDate)) {
+                dutyDay = event;
+                break;
+            }
+        }
+
+        // если сегодня нет события, то
         if (dutyDay == null) {
+            // берем кента из очереди
             KitchenUser dutyCandidate = naturalOrderClone.peek();
+            // проверяем не отсутствует ли он
+            for (DayOff dayOff: daysOff) {
+                LocalDate beginDate = dayOff.getBeginDate();
+                LocalDate endDate = dayOff.getEndDate();
+                if (dayOff.getUser().equals(dutyCandidate) &&
+                        (beginDate.equals(currentDate) || beginDate.isBefore(currentDate)) &&
+                        (endDate.equals(currentDate) || endDate.isAfter(currentDate))) {
+                    rewind(naturalOrderClone);
+                    System.out.printf("Сегодня (%s) %s отдыхает\n", currentDate, dutyCandidate);
+                    dutyCandidate = naturalOrderClone.peek();
+                    break;
+                }
+            }
+
+            // проверяем не заменяет ли его сегодня другой юзер
             for (SwapTicket ticket: swapList) {
                 if (ticket.getDate().equals(currentDate)) {
                     System.out.println(ticket);
@@ -47,7 +83,7 @@ public class ScheduleIterator {
                         dutyCandidate = ticket.getOtherUser();
                     } else {
 //                        throw new RuntimeException("User in ticket doesn't match user in schedule");
-                        System.out.println("Ошибочка вышла");
+                        System.out.println("Alert: User in ticket doesn't match user in schedule");
                     }
                 }
             }

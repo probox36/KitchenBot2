@@ -31,7 +31,7 @@ public class KitchenUser extends User {
 //    @Column(name = "begin_date")
 //    @Basic
 //    private LocalDate beginDate;
-
+//
 //    @Column(name = "end_date")
 //    @Basic
 //    private LocalDate endDate;

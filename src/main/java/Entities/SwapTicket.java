@@ -8,6 +8,10 @@ import java.time.LocalDate;
 @Entity
 public class SwapTicket {
 
+    // в таймере нужно реализовать проверку swapTicket на актуальность на основе флага о внесении изменений.
+    // не забудь, что флаг ставиться втч в случае если один из юзеров временно уезжает и возможно делает
+    // ряд swapTicket'ов неактуальными
+
     @Id
     @GeneratedValue (strategy = GenerationType.IDENTITY)
     private int id;
