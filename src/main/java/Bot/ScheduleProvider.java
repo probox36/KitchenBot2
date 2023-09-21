@@ -2,6 +2,7 @@ package Bot;
 
 import Entities.*;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.*;
 
@@ -64,6 +65,46 @@ public class ScheduleProvider {
             }
         }
         return dates;
+    }
+
+    public String getVisualization(int days) {
+        HashMap<LocalDate, DutyDay> schedule = getSchedule(days);
+        ArrayList<LocalDate> dates = new ArrayList<>(schedule.keySet());
+        Collections.sort(dates);
+        StringBuilder builder = new StringBuilder();
+
+        for (LocalDate date: dates) {
+            if (schedule.get(date).isRegular()) {
+                RegularDutyDay day = (RegularDutyDay) schedule.get(date);
+                builder.append(date.getDayOfMonth())
+                        .append(", ")
+                        .append(translate(date.getDayOfWeek()))
+                        .append(": дежурит ")
+                        .append(day.getUserOnDuty())
+                        .append("\n");
+            } else {
+                Event event = (Event) schedule.get(date);
+                builder.append(date.getDayOfMonth())
+                        .append(", ")
+                        .append(translate(date.getDayOfWeek()))
+                        .append(", событие: ")
+                        .append(event.getName())
+                        .append("\n");
+            }
+        }
+        return builder.toString();
+    }
+
+    public String translate(DayOfWeek day) {
+        return switch (day) {
+            case SUNDAY -> "Воскресенье";
+            case MONDAY -> "Понедельник";
+            case TUESDAY -> "Вторник";
+            case WEDNESDAY -> "Среда";
+            case THURSDAY -> "Четверг";
+            case FRIDAY -> "Пятница";
+            case SATURDAY -> "Суббота";
+        };
     }
 
     public boolean wereChangesMade() {

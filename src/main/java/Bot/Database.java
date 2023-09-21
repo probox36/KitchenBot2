@@ -1,16 +1,17 @@
-package Entities;
+package Bot;
 
 import Bot.HibernateConfigurator;
+import Entities.DayOff;
+import Entities.Event;
+import Entities.KitchenUser;
+import Entities.SwapTicket;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.query.NativeQuery;
 import org.hibernate.query.Query;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.List;
 
 public class Database {
 

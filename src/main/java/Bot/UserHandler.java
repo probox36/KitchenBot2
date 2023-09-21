@@ -33,24 +33,59 @@ public class UserHandler {
 
     public void pass(Message message) {
 
-        try {
-            if (!greeted) {
-                sendText("Привет, " + user.getFirstName());
-                sendMenu(Keyboards.getMenu(user.getStatus()), "Что бы ты хотел сделать?");
-                greeted = true;
+        if (!greeted) {
+            sendText("Привет, " + user.getFirstName());
+            sendMenu(Keyboards.getMenu(user.getStatus()), "Что бы ты хотел сделать?");
+            greeted = true;
+            return;
+        }
+
+        switch (message.getText()) {
+            case "Получить визуализацию очереди" -> sendText(ScheduleProvider.getInstance().getVisualization(10));
+            case "Закончить" -> {
+                sendText("До скорого!");
+                bot.removeHandler(user.getId());
                 return;
             }
-
-            switch (message.getText()) {
-                case "Закончить" -> {
-                    sendText("До скорого!");
-                    bot.removeHandler(user.getId());
+            default -> {
+                switch (user.getStatus()) {
+                    case ADMIN, REGULAR -> {
+                        switch (message.getText()) {
+                            case "Настроить оповещения" -> {}
+                            case "Поменяться местами" -> {}
+                            case "Узнать время дежурства" -> {}
+                            default -> {
+                                switch (user.getStatus()) {
+                                    case ADMIN -> {
+                                        switch (message.getText()) {
+                                            case "Создать событие" -> {}
+                                            case "Удалить пользователя" -> {}
+                                            case "Назначить ответственного" -> {}
+                                            case "Разослать новость" -> {}
+                                            default -> sendText("Такой команды нет");
+                                        }
+                                    }
+                                    case REGULAR -> {
+                                        switch (message.getText()) {
+                                            case "Запросить выход из очереди" -> {}
+                                            default -> sendText("Такой команды нет");
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    case CANDIDATE -> {
+                        switch (message.getText()) {
+                            case "Отправить запрос" -> {}
+                            default -> sendText("Такой комфнды нет");
+                        }
+                    }
                 }
-                default -> sendText(message.getText());
             }
-        } catch (Exception e) {
-            e.printStackTrace();
         }
+
+        sendText("Еще что-нибудь?");
 
     }
 

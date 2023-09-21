@@ -119,8 +119,7 @@ public class KitchenUser extends User {
 //        this.endDate = endDate;
 //    }
 
-    @Override
-    public String toString() {
+    public String longToString() {
         return "KitchenUser{" +
                 "Id = '" + id + '\'' +
                 ", Юзернейм = '" + userName + '\'' +
@@ -128,4 +127,6 @@ public class KitchenUser extends User {
                 ", Статус = " + status +
                 '}';
     }
+
+    public String toString() { return userName; }
 }
