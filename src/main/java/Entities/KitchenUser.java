@@ -12,7 +12,6 @@ import java.util.List;
 @Entity
 public class KitchenUser extends User {
     @Id
-    @GeneratedValue (strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(name = "username")
@@ -85,6 +84,15 @@ public class KitchenUser extends User {
 
     public void setStatus(Status status) {
         this.status = status;
+    }
+
+    public KitchenUser() {}
+
+    public KitchenUser(User user) {
+        id = user.getId();
+        userName = user.getUserName();
+        firstName = user.getFirstName();
+        status = Status.CANDIDATE;
     }
 
 //    public boolean isTemporarilyAbsent() {

@@ -2,6 +2,7 @@ package Entities;
 
 import Bot.HibernateConfigurator;
 import org.hibernate.Session;
+import org.hibernate.Transaction;
 import org.hibernate.query.NativeQuery;
 import org.hibernate.query.Query;
 
@@ -42,6 +43,16 @@ public class Database {
     public ArrayList<DayOff> getDaysOff() {
         String hql = "from DayOff";
         return performQuery(hql, DayOff.class);
+    }
+
+    public KitchenUser getUser(long id) {
+        return session.get(KitchenUser.class, id);
+    }
+
+    public void addUser(KitchenUser user) {
+        Transaction transaction = session.beginTransaction();
+        session.persist(user);
+        transaction.commit();
     }
 
     public LinkedList<KitchenUser> getQueue() {
