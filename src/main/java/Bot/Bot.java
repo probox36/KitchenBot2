@@ -8,6 +8,7 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.User;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 
@@ -22,10 +23,13 @@ public class Bot extends TelegramLongPollingBot {
     public void onUpdateReceived(Update update) {
         Database db = new Database();
         Message message = update.getMessage();
+        String text = message.getText();
         User user = message.getFrom();
         Long userId = user.getId();
         UserHandler handler = activeHandlers.get(userId);
+
         if (handler == null) {
+            if (!text.equalsIgnoreCase("/start") && !text.equalsIgnoreCase("начать")) { return; }
             KitchenUser newUser = db.getUser(userId);
             if (newUser == null) {
                 newUser = new KitchenUser(user);
@@ -35,6 +39,10 @@ public class Bot extends TelegramLongPollingBot {
             activeHandlers.put(userId, handler);
         }
         handler.pass(message);
+    }
+
+    public void removeHandler(Long userId) {
+        activeHandlers.remove(userId);
     }
 
     @Override
@@ -50,6 +58,19 @@ public class Bot extends TelegramLongPollingBot {
     public static void main(String[] args) throws TelegramApiException {
         TelegramBotsApi botsApi = new TelegramBotsApi(DefaultBotSession.class);
         botsApi.registerBot(new Bot());
+    }
+
+    public void sendMenu(Long who, String text, ReplyKeyboardMarkup keyboard){
+        SendMessage sendMessage = new SendMessage();
+        sendMessage.setChatId(who.toString());
+        sendMessage.enableMarkdown(true);
+        sendMessage.setReplyMarkup(keyboard);
+        sendMessage.setText(text);
+        try {
+            execute(sendMessage);
+        } catch (TelegramApiException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public void sendText(Long who, String what){
