@@ -32,32 +32,32 @@ public class Runner {
 //        order.add(user4);
 
         Session session = HibernateConfigurator.getSession();
+        Transaction transaction = session.beginTransaction();
 
-        KitchenUser user1 = session.get(KitchenUser.class, 1);
+//        KitchenUser user1 = session.get(KitchenUser.class, 1);
 //        KitchenUser user2 = session.get(KitchenUser.class, 2);
-        KitchenUser user3 = session.get(KitchenUser.class, 3);
+//        KitchenUser user3 = session.get(KitchenUser.class, 3);
 
-//        LocalDate date1 = LocalDate.of(2023, 9,25);
+        LocalDate date1 = LocalDate.of(2023, 9,22);
 //        LocalDate date2 = LocalDate.of(2023, 9,27);
 //        LocalDate date3 = LocalDate.of(2023, 9,29);
-//        Event event1 = new Event(date1, "День металлурга");
+        Event event1 = new Event(date1, "День говна");
+        session.persist(event1);
 //        Event event2 = new Event(date2, "Фестиваль фистинга");
 //        Event event3 = new Event(date3, "Купи сыр");
-//
-        Transaction transaction = session.beginTransaction();
 //
 //        for (Event e: new Event[]{event1, event2, event3}) {
 //            session.persist(e);
 //        }
 
-        SwapTicket ticket1 = new SwapTicket(LocalDate.of(2023, 9, 22), user3, user1);
-        SwapTicket ticket2 = new SwapTicket(LocalDate.of(2023, 9, 23), user1, user3);
-        ArrayList<SwapTicket> swapList = new ArrayList<>();
-        swapList.add(ticket1);
-        swapList.add(ticket2);
-
-        session.persist(ticket1);
-        session.persist(ticket2);
+//        SwapTicket ticket1 = new SwapTicket(LocalDate.of(2023, 9, 22), user3, user1);
+//        SwapTicket ticket2 = new SwapTicket(LocalDate.of(2023, 9, 23), user1, user3);
+//        ArrayList<SwapTicket> swapList = new ArrayList<>();
+//        swapList.add(ticket1);
+//        swapList.add(ticket2);
+//
+//        session.persist(ticket1);
+//        session.persist(ticket2);
 
         transaction.commit();
 
