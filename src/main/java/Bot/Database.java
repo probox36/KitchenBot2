@@ -63,17 +63,19 @@ public class Database {
     }
 
     public void rewindQueue() {
+        String sql = "update queue set position = mod((position + :length - 2), :length) + 1;";
+        Transaction transaction = session.beginTransaction();
+        NativeQuery query = session.createNativeQuery(sql);
+        query.setParameter("length", getQueueLength());
+        query.executeUpdate();
+        transaction.commit();
+    }
+
+    public int getQueueLength() {
         String sql = "SELECT COUNT(*) FROM queue;";
         NativeQuery query = session.createNativeQuery(sql);
         query.addScalar("COUNT(*)", Integer.class);
-        int length = (int) query.uniqueResult();
-        System.out.println(length);
-        sql = "update queue set position = mod((position + :length - 2), :length) + 1;";
-        Transaction transaction = session.beginTransaction();
-        query = session.createNativeQuery(sql);
-        query.setParameter("length", length);
-        query.executeUpdate();
-        transaction.commit();
+        return (int) query.uniqueResult();
     }
 
 }

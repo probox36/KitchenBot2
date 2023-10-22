@@ -1,6 +1,7 @@
 package Bot;
 
 import Entities.KitchenUser;
+import Entities.Modal;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -16,15 +17,18 @@ import java.util.HashMap;
 public class Bot extends TelegramLongPollingBot {
 
     private final HashMap<Long, UserHandler> activeHandlers = new HashMap<>();
+    private HashMap<Long, Modal> modals;
 
     @Override
     public void onUpdateReceived(Update update) {
-        Database db = new Database();
         Message message = update.getMessage();
-        String text = message.getText();
         User user = message.getFrom();
         Long userId = user.getId();
+        System.out.println("Мы получили message от " + user.getUserName() + ": " + message.getText());
+
+        String text = message.getText();
         UserHandler handler = activeHandlers.get(userId);
+        Database db = new Database();
 
         if (handler == null) {
             if (!text.equalsIgnoreCase("/start") && !text.equalsIgnoreCase("начать")) { return; }
@@ -41,6 +45,14 @@ public class Bot extends TelegramLongPollingBot {
 
     public void removeHandler(Long userId) {
         activeHandlers.remove(userId);
+    }
+
+    public void addModal(Long id, Modal modal) {
+        modals.put(id, modal);
+    }
+
+    public void removeModal(Long id) {
+        modals.remove(id);
     }
 
     @Override

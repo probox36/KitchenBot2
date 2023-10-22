@@ -1,5 +1,10 @@
 package Bot;
 
+import Dialogues.FindOutDutyTimeDialogue;
+import Dialogues.QueueVisualisationDialogue;
+import Dialogues.ShareMessageDialogue;
+import Dialogues.SwapPlacesDialogue;
+import Entities.Dialogue;
 import Entities.KitchenUser;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
@@ -9,6 +14,7 @@ public class UserHandler {
     private KitchenUser user;
     private final Bot bot;
     private boolean greeted = false;
+    private Dialogue activeDialogue;
 
     public UserHandler(KitchenUser user, Bot bot) {
         this.user = user;
@@ -31,6 +37,11 @@ public class UserHandler {
         bot.sendMenu(user.getId(), text, keyboard);
     }
 
+    public void removeDialogue() {
+        activeDialogue = null;
+        sendText("Что-нибудь еще?");
+    }
+
     public void pass(Message message) {
 
         if (!greeted) {
@@ -40,52 +51,40 @@ public class UserHandler {
             return;
         }
 
+        if (activeDialogue != null) {
+            activeDialogue.passMessage(message);
+            return;
+        }
+
         switch (message.getText()) {
-            case "Получить визуализацию очереди" -> sendText(ScheduleProvider.getInstance().getVisualization(10));
+            case "Получить визуализацию очереди" -> {
+                activeDialogue = new QueueVisualisationDialogue(this);
+                activeDialogue.passMessage(message);
+            }
             case "Закончить" -> {
                 sendText("До скорого!");
                 bot.removeHandler(user.getId());
-                return;
             }
-            default -> {
-                switch (user.getStatus()) {
-                    case ADMIN, REGULAR -> {
-                        switch (message.getText()) {
-                            case "Настроить оповещения" -> {}
-                            case "Поменяться местами" -> {}
-                            case "Узнать время дежурства" -> {}
-                            default -> {
-                                switch (user.getStatus()) {
-                                    case ADMIN -> {
-                                        switch (message.getText()) {
-                                            case "Создать событие" -> {}
-                                            case "Удалить пользователя" -> {}
-                                            case "Назначить ответственного" -> {}
-                                            case "Разослать новость" -> {}
-                                            default -> sendText("Такой команды нет");
-                                        }
-                                    }
-                                    case REGULAR -> {
-                                        switch (message.getText()) {
-                                            case "Запросить выход из очереди" -> {}
-                                            default -> sendText("Такой команды нет");
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    case CANDIDATE -> {
-                        switch (message.getText()) {
-                            case "Отправить запрос" -> {}
-                            default -> sendText("Такой комфнды нет");
-                        }
-                    }
-                }
+            case "Настроить оповещения" -> { sendText("Команда еще не реализована"); }
+            case "Поменяться местами" -> {
+                activeDialogue = new SwapPlacesDialogue(this);
+                activeDialogue.passMessage(message);
             }
+            case "Узнать время дежурства" -> {
+                activeDialogue = new FindOutDutyTimeDialogue(this);
+                activeDialogue.passMessage(message);
+            }
+            case "Создать событие" -> { sendText("Команда еще не реализована"); }
+            case "Удалить пользователя" -> { sendText("Команда еще не реализована"); }
+            case "Назначить ответственного" -> { sendText("Команда еще не реализована"); }
+            case "Разослать новость" -> {
+                activeDialogue = new ShareMessageDialogue(this);
+                activeDialogue.passMessage(message);
+            }
+            case "Запросить выход из очереди" -> { sendText("Команда еще не реализована"); }
+            case "Отправить запрос" -> { sendText("Команда еще не реализована"); }
+            default -> sendText("Я тебя не понял. Введи одну из команд");
         }
-
-        sendText("Еще что-нибудь?");
 
     }
 
