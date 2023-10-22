@@ -31,6 +31,12 @@ public class SwapPlacesDialogue extends Dialogue {
     @Override
     public void passMessage(Message message) {
 
+        if (currentUser.getStatus() == Status.CANDIDATE) {
+            sendText("Эта команда вам недоступна");
+            handler.removeDialogue();
+            return;
+        }
+
         if (message.getText().equalsIgnoreCase("Отмена") ||
                 message.getText().equalsIgnoreCase("Отменить")) {
             handler.removeDialogue();

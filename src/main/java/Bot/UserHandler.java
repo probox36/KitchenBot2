@@ -1,9 +1,6 @@
 package Bot;
 
-import Dialogues.FindOutDutyTimeDialogue;
-import Dialogues.QueueVisualisationDialogue;
-import Dialogues.ShareMessageDialogue;
-import Dialogues.SwapPlacesDialogue;
+import Dialogues.*;
 import Entities.Dialogue;
 import Entities.KitchenUser;
 import org.telegram.telegrambots.meta.api.objects.Message;
@@ -74,7 +71,10 @@ public class UserHandler {
                 activeDialogue = new FindOutDutyTimeDialogue(this);
                 activeDialogue.passMessage(message);
             }
-            case "Создать событие" -> { sendText("Команда еще не реализована"); }
+            case "Создать событие" -> {
+                activeDialogue = new CreateEventDialogue(this);
+                activeDialogue.passMessage(message);
+            }
             case "Удалить пользователя" -> { sendText("Команда еще не реализована"); }
             case "Назначить ответственного" -> { sendText("Команда еще не реализована"); }
             case "Разослать новость" -> {
