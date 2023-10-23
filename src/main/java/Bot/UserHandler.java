@@ -62,7 +62,10 @@ public class UserHandler {
                 sendText("До скорого!");
                 bot.removeHandler(user.getId());
             }
-            case "Настроить оповещения" -> { sendText("Команда еще не реализована"); }
+            case "Настроить оповещения" -> {
+                activeDialogue = new SetUpNotificationsDialogue(this);
+                activeDialogue.passMessage(message);
+            }
             case "Поменяться местами" -> {
                 activeDialogue = new SwapPlacesDialogue(this);
                 activeDialogue.passMessage(message);

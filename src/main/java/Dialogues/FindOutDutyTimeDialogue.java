@@ -26,7 +26,7 @@ public class FindOutDutyTimeDialogue extends Dialogue {
         }
 
         ScheduleProvider provider = ScheduleProvider.getInstance();
-        int times = 2;
+        int times = 4;
         ArrayList<LocalDate> dates = provider.getDutyDates(handler.getUser(), times);
         if (dates.size() > 0) {
             StringBuilder builder = new StringBuilder(times + " твоих близжайших дежурства:\n");
