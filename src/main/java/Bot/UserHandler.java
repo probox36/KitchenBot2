@@ -5,6 +5,9 @@ import Entities.Dialogue;
 import Entities.KitchenUser;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class UserHandler {
 
@@ -12,10 +15,23 @@ public class UserHandler {
     private final Bot bot;
     private boolean greeted = false;
     private Dialogue activeDialogue;
+    private ScheduledExecutorService timer;
+
+    public boolean hasActiveDialogue() {
+        return activeDialogue != null;
+    }
 
     public UserHandler(KitchenUser user, Bot bot) {
         this.user = user;
         this.bot = bot;
+    }
+
+    public void setActiveDialogue(Dialogue dialogue) {
+        if (activeDialogue == null) {
+            activeDialogue = dialogue;
+        } else {
+            throw new RuntimeException("У меня уже есть активный диалог!");
+        }
     }
 
     public KitchenUser getUser() {
@@ -36,10 +52,14 @@ public class UserHandler {
 
     public void removeDialogue() {
         activeDialogue = null;
+        ModalService service = ModalService.getInstance(bot);
+        if (service.notify(user)) { return; }
         sendText("Что-нибудь еще?");
     }
 
     public void pass(Message message) {
+
+        setTimer();
 
         if (!greeted) {
             sendText("Привет, " + user.getFirstName());
@@ -60,6 +80,7 @@ public class UserHandler {
             }
             case "Закончить" -> {
                 sendText("До скорого!");
+                timer.shutdownNow();
                 bot.removeHandler(user.getId());
             }
             case "Настроить оповещения" -> {
@@ -89,6 +110,15 @@ public class UserHandler {
             default -> sendText("Я тебя не понял. Введи одну из команд");
         }
 
+    }
+
+    private void setTimer() {
+        if (timer != null) {
+            timer.shutdownNow();
+        }
+        timer = Executors.newSingleThreadScheduledExecutor();
+        timer.schedule(() -> bot.removeHandler(user.getId()),
+                5, TimeUnit.MINUTES);
     }
 
 }

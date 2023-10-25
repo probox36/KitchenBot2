@@ -1,7 +1,6 @@
 package Bot;
 
 import Entities.KitchenUser;
-import Entities.Modal;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -11,27 +10,31 @@ import org.telegram.telegrambots.meta.api.objects.User;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
-
 import java.util.HashMap;
 
 public class Bot extends TelegramLongPollingBot {
 
     private final HashMap<Long, UserHandler> activeHandlers = new HashMap<>();
-    private HashMap<Long, Modal> modals;
 
     @Override
     public void onUpdateReceived(Update update) {
         Message message = update.getMessage();
         User user = message.getFrom();
-        Long userId = user.getId();
         System.out.println("Мы получили message от " + user.getUserName() + ": " + message.getText());
+        UserHandler handler = getHandler(user);
+        handler.pass(message);
+    }
 
-        String text = message.getText();
+    public void removeHandler(Long userId) {
+        activeHandlers.remove(userId);
+    }
+
+    public UserHandler getHandler(User user) {
+        long userId = user.getId();
         UserHandler handler = activeHandlers.get(userId);
         Database db = new Database();
 
         if (handler == null) {
-            if (!text.equalsIgnoreCase("/start") && !text.equalsIgnoreCase("начать")) { return; }
             KitchenUser newUser = db.getUser(userId);
             if (newUser == null) {
                 newUser = new KitchenUser(user);
@@ -40,19 +43,7 @@ public class Bot extends TelegramLongPollingBot {
             handler = new UserHandler(newUser, this);
             activeHandlers.put(userId, handler);
         }
-        handler.pass(message);
-    }
-
-    public void removeHandler(Long userId) {
-        activeHandlers.remove(userId);
-    }
-
-    public void addModal(Long id, Modal modal) {
-        modals.put(id, modal);
-    }
-
-    public void removeModal(Long id) {
-        modals.remove(id);
+        return handler;
     }
 
     @Override

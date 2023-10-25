@@ -46,7 +46,6 @@ public class ScheduleProvider {
             }
             archivedSchedule = schedule;
             changesMade = false;
-            System.out.println("Мы вернули обычный schedule!");
             iterator.reset();
             return schedule;
 //        }
